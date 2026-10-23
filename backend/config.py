@@ -1,33 +1,41 @@
-"""Application configuration loaded from environment variables."""
-
-from __future__ import annotations
+import json
+import logging
+import os
+from typing import Union
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger("backend.config")
 
 
 class Settings(BaseSettings):
     """Application settings with defaults suitable for cloud and local development."""
 
-    cors_origins: list[str] = ["*"]
+    cors_origins: Union[list[str], str] = ["*"]
     log_level: str = "INFO"
     data_snapshot_path: str = "data/snapshot.json"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("cors_origins", mode="after")
     @classmethod
-    def parse_cors_origins(cls, v: object) -> list[str]:
-        """Allow CORS_ORIGINS as a JSON list, comma-separated string, or wildcard."""
+    def normalize_cors_origins(cls, v: Union[list[str], str]) -> list[str]:
+        """Normalize CORS_ORIGINS from wildcard, comma-separated string, or JSON list."""
         if isinstance(v, str):
             v_str = v.strip()
+            if v_str == "*":
+                return ["*"]
             if v_str.startswith("[") and v_str.endswith("]"):
-                import json
-                return json.loads(v_str)
+                try:
+                    parsed = json.loads(v_str)
+                    if isinstance(parsed, list):
+                        return [str(x) for x in parsed]
+                except Exception:
+                    pass
             return [origin.strip() for origin in v_str.split(",") if origin.strip()]
-        if isinstance(v, list):
-            return [str(item) for item in v]
-        return ["*"]
+        return [str(item) for item in v]
 
 
 settings = Settings()
+
