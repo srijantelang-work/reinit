@@ -22,10 +22,15 @@ def load_snapshot(path: str | None = None) -> None:
     global _actuals, _forecasts, _loaded
     file_path = Path(path or settings.data_snapshot_path)
     if not file_path.exists():
-        _actuals = []
-        _forecasts = []
-        _loaded = True
-        return
+        # Fallback: resolve relative to repository root if cwd is different (e.g. Vercel serverless)
+        candidate = Path(__file__).resolve().parent.parent / file_path
+        if candidate.exists():
+            file_path = candidate
+        else:
+            _actuals = []
+            _forecasts = []
+            _loaded = True
+            return
 
     raw = json.loads(file_path.read_text(encoding="utf-8"))
     _actuals = [WindActual(**row) for row in raw.get("actuals", [])]
