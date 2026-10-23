@@ -1,4 +1,4 @@
-"""Domain models for wind forecast data."""
+"""Domain and API models for wind forecast data."""
 
 from __future__ import annotations
 
@@ -53,3 +53,46 @@ class DailyAccuracy(BaseModel):
     bias: float
     point_count: int
     excluded_count: int
+
+
+# API Schemas
+
+
+class MetaResponse(BaseModel):
+    """Metadata about available data range and configuration defaults."""
+
+    start_date: str
+    end_date: str
+    default_cutoff: str
+    default_date: str
+    total_actual_records: int
+    total_forecast_records: int
+
+
+class ForecastPoint(BaseModel):
+    """A single half-hour point in the daily forecast series."""
+
+    settlement_period: int
+    start_time: str
+    forecast_mw: int | None = None
+    forecast_publish_time: str | None = None
+    actual_mw: int | None = None
+
+
+class ForecastResponse(BaseModel):
+    """Forecast series response for a delivery day and cutoff."""
+
+    delivery_date: str
+    cutoff: str
+    cutoff_utc: str
+    points: list[ForecastPoint]
+
+
+class AccuracyResponse(BaseModel):
+    """Accuracy metrics response across a date range and cutoff."""
+
+    start_date: str
+    end_date: str
+    cutoff: str
+    metrics: AccuracyMetrics
+    daily: list[DailyAccuracy]

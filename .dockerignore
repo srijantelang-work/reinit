@@ -1,0 +1,34 @@
+# Version control
+.git
+.gitignore
+
+# Python
+.venv
+__pycache__
+*.pyc
+*.pyo
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov
+
+# Node
+frontend/node_modules
+frontend/dist
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docs / planning (not needed at runtime)
+*.md
+phase0_data_contract.md
+plan.md
+
+# Dev config
+.editorconfig
+.env.example
+requirements-dev.txt
